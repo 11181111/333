@@ -1,0 +1,78 @@
+import matplotlib.pyplot as plt
+from scipy.misc import imread
+from scipy import ndimage, linalg, fftpack
+from math import sqrt
+import numpy as np
+import pywt
+from skimage import morphology
+n = 41
+img = [0]*n
+focus_value = [0]*n
+for k in range(0,n):
+    # чтение изображений
+    img[k] = imread('Images/_______/{}.png'.format(-20+k), False , 'L')
+    for k in range(0,n):
+    print("Image '"+str(k-20)+"' processed")
+    
+    # определение размеров изображения
+    H, W = img[k].shape
+    
+    # расчет значения сигмы
+    s = 1.1/(2*sqrt(3))
+    
+    # обнуление значений переменных
+    fx = 0
+    fy = 0
+    
+    # примененение Гауссового фильтра в горизонтальном направлении
+    for i in range(0,H):
+        fx += (ndimage.filters.gaussian_filter(img[k][i], s, 1 )**2)
+        
+    # примененение Гауссового фильтра в вертикальном направлении
+    for j in range(0,W):
+        fy += (ndimage.filters.gaussian_filter(img[k][:,j], s, 1 )**2)
+    
+    # расчет значения резкости
+    f = sum(fx) + sum(fy)
+    focus_value[k] = (1/(H*W)) * f        
+print(focus_value, '\n')
+y_axis = focus_value
+x_axis = np.linspace(-20, 20, len(y_axis), endpoint=True)
+plt.plot(x_axis,y_axis)
+plt.xlabel('Номер изображения (z-ось)')
+plt.ylabel('Значение резкости (ед.)')
+plt.grid()
+plt.show()
+
+focused_num_SKGP = int(x_axis[y_axis.index(max(y_axis))])
+print("Сфокусированное изображение:", focused_num_SKGP)
+plt.imshow(img[y_axis.index(max(y_axis))], 'gray')
+plt.title('Сфокусированное изображние №'+str(focused_num_SKGP))
+plt.axis('off')
+plt.show()
+focus_value = [0]*n
+for k in range(0,n):  
+    print("Image '"+str(k-20)+"' processed")
+    
+    # Применение оператора Собеля в горизонтальном направлении 
+    dx = ndimage.sobel(img[k], 0)
+    # Применение оператора Собеля в вертикальном направлении 
+    dy = ndimage.sobel(img[k], 1)
+    
+    # Расчет характеристики резкости в соответствии с формулой 
+    focus_value[k] = ndimage.sum(((dx**2) + (dy**2)))
+print(focus_value, '\n')
+y_axis = focus_value
+x_axis = np.linspace(-20, 20, len(y_axis), endpoint=True)
+plt.plot(x_axis,y_axis)
+plt.xlabel('Номер изображения (z-ось)')
+plt.ylabel('Значение резкости (ед.)')
+plt.grid()
+plt.show()
+
+focused_num_Tenenbaum = int(x_axis[y_axis.index(max(y_axis))])
+print("Сфокусированное изображение:", focused_num_Tenenbaum)
+plt.imshow(img[y_axis.index(max(y_axis))], 'gray')
+plt.title('Сфокусированное изображние №'+str(focused_num_Tenenbaum))
+plt.axis('off')
+plt.show()
